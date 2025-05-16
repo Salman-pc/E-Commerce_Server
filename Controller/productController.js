@@ -67,7 +67,61 @@ exports.getSingleProductController = async (req, res) => {
   }
 };
 
-exports.getSearchbasedProductController = async (req,res)=>{
-    console.log("inside the getSearchbasedProductController");
-    
-}
+exports.getSearchbasedProductController = async (req, res) => {
+  console.log("Inside getSearchbasedProductController");
+
+  const { keyword } = req.query;
+
+  try {
+    if (!keyword || keyword.trim() === "") {
+      return res.status(400).json({ success: false, message: "Search keyword is required" });
+    }
+
+  
+    const products = await Product.find({
+      title: { $regex: keyword, $options: 'i' }
+    });
+
+    return res.status(200).json({ success: true, data: products });
+  } catch (error) {
+    console.error("Search Error:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+exports.EditProductController = async (req, res) => {
+  const productId = req.params.id;
+  const { title, description, subCategory, variants } = req.body;
+  const files = req.files;
+
+  if (!productId) {
+    return res.status(400).json({ message: "Product ID is required" });
+  }
+
+  try {
+    const updateData = {};
+
+    if (title) updateData.title = title;
+    if (description) updateData.description = description;
+    if (subCategory) updateData.subCategory = subCategory;
+    if (variants) updateData.variants = JSON.parse(variants);
+    if (files && files.length > 0) {
+      updateData.images = files.map(file => file.filename);
+    }
+
+    const updatedProduct = await Product.findByIdAndUpdate(
+      productId,
+      { $set: updateData },
+      { new: true } 
+    );
+
+    if (!updatedProduct) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    res.status(200).json({ message: "Product updated successfully", product: updatedProduct });
+  } catch (error) {
+    console.error("Error updating product:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

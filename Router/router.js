@@ -6,6 +6,7 @@ const subcategoryController=require('../Controller/subcategoriesController')
 const productController=require('../Controller/productController')
 const multermiddileware = require('../Middilware/MulterMiddileware')
 const wishlistcontroller = require('../Controller/wishlistController')
+const multer = require('multer')
 
 const router = express.Router()
 
@@ -25,7 +26,8 @@ router.get("/getsubcategory",subcategoryController.getsubcategoriesController)
 router.post("/addproduct",multermiddileware.array('images',3),productController.addProductController)
 router.get("/getproduct",productController.getProductController)
 router.get("/getsingleproduct/:id",productController.getSingleProductController)
-
+router.get('/search', productController.getSearchbasedProductController);
+router.put('/editproduct/:id',multermiddileware.array('images',3),productController.EditProductController)
 // wishlist
 router.post("/addtowishlist",wishlistcontroller.addproducttowishlistController)
 router.get("/gettowishlist/:userid",wishlistcontroller.getWishlistController)
